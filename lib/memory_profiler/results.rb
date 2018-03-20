@@ -18,8 +18,11 @@ module MemoryProfiler
     attr_accessor :strings_retained, :strings_allocated
     attr_accessor :total_retained, :total_allocated
     attr_accessor :total_retained_memsize, :total_allocated_memsize
+    attr_accessor :allocated, :retained
 
     def register_results(allocated, retained, top)
+      self.allocated = allocated
+      self.retained = retained
 
       @@lookups.each do |name, stat_attribute|
 

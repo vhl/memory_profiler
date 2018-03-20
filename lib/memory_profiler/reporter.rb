@@ -103,16 +103,51 @@ module MemoryProfiler
 
         begin
           line       = ObjectSpace.allocation_sourceline(obj)
+          method_id  = ObjectSpace.allocation_method_id(obj)
+          class_path = ObjectSpace.allocation_class_path(obj)
+          class_path = '' if class_path.nil?
           location   = helper.lookup_location(file, line)
           class_name = helper.lookup_class_name(klass)
           gem        = helper.guess_gem(file)
 
-          string     = klass == String ? helper.lookup_string(obj) : nil
+          string = if klass == String
+                     helper.lookup_string(obj)
+                   elsif klass == Array
+                     "Array(#{obj.size})(#{obj.inspect})"
+                   elsif klass == Hash
+                     "Hash(#{obj.size})(#{obj.inspect})"
+                   elsif klass == Set
+                     "Set(#{obj.size})(#{obj.inspect})"
+                   elsif klass == Class
+                     if obj.name.nil?
+                       # Anonymous class
+                       obj.inspect
+                     else
+                       obj.name
+                     end
+                   elsif klass == Proc
+                     "#{obj.inspect}(#{obj.parameters})"
+                   elsif klass == Module
+                     if obj.name.nil?
+                       # Anonymous module
+                       obj.inspect
+                     else
+                       obj.name
+                     end
+                   else
+                     obj.inspect
+                   end
+          # string = case klass
+          #          when String then helper.lookup_string(obj)
+          #          # when Array, Set, Hash then "#{klass.name}(#{obj.size})"
+          #          # when Class then obj.name
+          #          else nil
+          #          end
 
           memsize = ObjectSpace.memsize_of(obj) + rvalue_size_adjustment
           # compensate for API bug
           memsize = rvalue_size if memsize > 100_000_000_000
-          result[obj.__id__] = MemoryProfiler::Stat.new(class_name, gem, file, location, memsize, string)
+          result[obj.__id__] = MemoryProfiler::Stat.new(class_name, class_path, method_id, gem, file, location, memsize, string)
         rescue
           # give up if any any error occurs inspecting the object
         end
