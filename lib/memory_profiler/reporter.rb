@@ -110,38 +110,33 @@ module MemoryProfiler
           class_name = helper.lookup_class_name(klass)
           gem        = helper.guess_gem(file)
 
-          string = if klass == String
-                     helper.lookup_string(obj)
-                   elsif klass == Array
-                     "Array(#{obj.size})(#{obj.inspect})"
-                   elsif klass == Hash
-                     "Hash(#{obj.size})(#{obj.inspect})"
-                   elsif klass == Set
-                     "Set(#{obj.size})(#{obj.inspect})"
-                   elsif klass == Class
-                     if obj.name.nil?
-                       # Anonymous class
-                       obj.inspect
-                     else
-                       obj.name
-                     end
-                   elsif klass == Proc
-                     "#{obj.inspect}(#{obj.parameters})"
-                   elsif klass == Module
-                     if obj.name.nil?
-                       # Anonymous module
-                       obj.inspect
-                     else
-                       obj.name
-                     end
-                   else
-                     obj.inspect
-                   end
-          # string = case klass
-          #          when String then helper.lookup_string(obj)
-          #          # when Array, Set, Hash then "#{klass.name}(#{obj.size})"
-          #          # when Class then obj.name
-          #          else nil
+          string = klass == String ? helper.lookup_string(obj) : ''
+          # string = if klass == String
+          #            helper.lookup_string(obj)
+          #          elsif klass == Array
+          #            "Array(#{obj.size})(#{obj.inspect})"
+          #          elsif klass == Hash
+          #            "Hash(#{obj.size})(#{obj.inspect})"
+          #          elsif klass == Set
+          #            "Set(#{obj.size})(#{obj.inspect})"
+          #          elsif klass == Class
+          #            if obj.name.nil?
+          #              # Anonymous class
+          #              obj.inspect
+          #            else
+          #              obj.name
+          #            end
+          #          elsif klass == Proc
+          #            "#{obj.inspect}(#{obj.parameters})"
+          #          elsif klass == Module
+          #            if obj.name.nil?
+          #              # Anonymous module
+          #              obj.inspect
+          #            else
+          #              obj.name
+          #            end
+          #          else
+          #            obj.inspect
           #          end
 
           memsize = ObjectSpace.memsize_of(obj) + rvalue_size_adjustment
